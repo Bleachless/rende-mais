@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { cdbEquivalent, irRate, periodLabel, poupancaMonthly, products, simulate, simulateAll, type Inputs, type Rates } from "./calc";
+import { cdbEquivalent, irRate, monthlyFor, periodLabel, poupancaMonthly, products, simulate, simulateAll, type Inputs, type Rates } from "./calc";
 
 const rates: Rates = { selic: 13.75, selicEfetiva: 13.65, cdi: 13.65, tr: 0.1261, ipca12: 4.58, updated: "22/10/2026", live: true };
-const base: Inputs = { initial: 10_000, monthly: 0, months: 12, cdbPct: 100, lciPct: 90, prefixado: 14 };
+const base: Inputs = { initial: 10_000, monthly: 0, months: 12, cdbPct: 100, lciPct: 90, prefixado: 14, ipcaReal: 7, fundoPct: 100, fundoFee: 0.5 };
+const pick = (id: string, i: Inputs = base) => products(rates, i).find((p) => p.id === id)!;
 const close = (a: number, b: number, tol = 0.01) => expect(Math.abs(a - b)).toBeLessThan(tol);
 
 describe("tabela do IR", () => {
@@ -73,5 +74,46 @@ describe("simulação", () => {
     expect(periodLabel(12)).toBe("1 ano");
     expect(periodLabel(30)).toBe("2 anos e 6 meses");
     expect(periodLabel(1)).toBe("1 mês");
+  });
+
+  it("Tesouro IPCA+ soma IPCA e juro real e paga custódia sobre tudo", () => {
+    const r = simulate(pick("ipca"), base, rates.ipca12);
+    close(r.product.annual, (1.0458 * 1.07 - 1) * 100, 1e-9);
+    expect(r.fees).toBeGreaterThan(19); // 0,20% de uns R$ 10,7 mil
+    expect(r.fees).toBeLessThan(22);
+  });
+
+  it("fundo DI: come-cotas a cada 6 meses e o resto do IR no resgate", () => {
+    const r = simulate(pick("fundo"), base, rates.ipca12);
+    const f = Math.pow(1.1365, 1 / 12) * Math.pow(0.995, 1 / 12);
+    // 6 meses e uma mordida de 15% do ganho; mais 6 meses, outra; no resgate, completa até 17,5%.
+    let v = 10_000 * Math.pow(f, 6);
+    const bite1 = (v - 10_000) * 0.15;
+    v -= bite1;
+    const base6 = v;
+    v *= Math.pow(f, 6);
+    const bite2 = (v - base6) * 0.15;
+    v -= bite2;
+    const prepaid = bite1 + bite2;
+    const due = (v + prepaid - 10_000) * 0.175 - prepaid;
+    close(r.net, v - due);
+    close(r.ir, prepaid + due);
+    // Rende menos que um CDB de 100% do CDI: tem taxa e perde juros sobre juros com o come-cotas.
+    expect(r.net).toBeLessThan(simulate(pick("cdb"), base, rates.ipca12).net);
+  });
+});
+
+describe("meta", () => {
+  it("acha o aporte que chega na meta, no centavo", () => {
+    const i = { ...base, initial: 0, months: 24 };
+    const m = monthlyFor(pick("lci", i), i, 50_000, rates.ipca12)!;
+    const at = (x: number) => simulate(pick("lci", i), { ...i, monthly: x }, rates.ipca12).net;
+    expect(at(m)).toBeGreaterThanOrEqual(50_000);
+    expect(at(m - 0.02)).toBeLessThan(50_000);
+  });
+
+  it("se o que você já tem basta, o aporte é zero; em 1 mês sem dinheiro, é impossível", () => {
+    expect(monthlyFor(pick("cdb"), base, 10_500, rates.ipca12)).toBe(0);
+    expect(monthlyFor(pick("cdb"), { ...base, initial: 0, months: 1 }, 1_000, rates.ipca12)).toBeNull();
   });
 });

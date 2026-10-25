@@ -11,13 +11,15 @@
 ![React](https://img.shields.io/badge/React_19-0a0d12?style=flat-square&logo=react&logoColor=61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-0a0d12?style=flat-square&logo=typescript&logoColor=3178c6)
 ![Recharts](https://img.shields.io/badge/Recharts-0a0d12?style=flat-square)
-![Vitest](https://img.shields.io/badge/10_testes-0a0d12?style=flat-square&logo=vitest&logoColor=3ddc97)
+![Vitest](https://img.shields.io/badge/14_testes-0a0d12?style=flat-square&logo=vitest&logoColor=3ddc97)
 
-**Poupança, CDB, LCI/LCA, Tesouro Selic ou prefixado: quanto rende de verdade?**
+**Poupança, CDB, LCI/LCA, Tesouro, fundo DI ou prefixado: quanto rende de verdade?**
 <br />
 Com o CDI, a Selic, a TR e o IPCA de hoje, direto do Banco Central,
 <br />
-e já descontando o que ninguém lembra: **IR regressivo, custódia da B3 e inflação.**
+e já descontando o que ninguém lembra: **IR regressivo, come-cotas, custódia da B3 e inflação.**
+<br />
+Ou diga a sua meta e veja quanto guardar por mês em cada um.
 
 </div>
 
@@ -28,15 +30,19 @@ e já descontando o que ninguém lembra: **IR regressivo, custódia da B3 e infl
 ## ✨ O que ele faz
 
 - **Taxas de hoje, sozinho.** Selic, CDI, TR e IPCA vêm da API pública do Banco Central (SGS) e se atualizam de hora em hora.
-- **Cinco investimentos lado a lado:** poupança, CDB (% do CDI), LCI/LCA (% do CDI), Tesouro Selic e prefixado.
+- **Sete investimentos lado a lado:** poupança, CDB e LCI/LCA (% do CDI), Tesouro Selic, Tesouro IPCA+, fundo DI e prefixado.
+- **Modo meta:** diga quanto quer juntar e em quanto tempo, e veja quanto guardar por mês em cada investimento.
 - **Valor inicial e aportes mensais,** de 1 mês a 30 anos.
 - **IR por aporte.** Cada aporte conta o próprio prazo na tabela regressiva: o dinheiro mais novo paga mais imposto.
-- **Custódia da B3** no Tesouro Selic, só sobre o que passa de R$ 10 mil.
+- **Custódia da B3** no Tesouro (no Selic, só sobre o que passa de R$ 10 mil).
+- **Come-cotas** no fundo DI: 15% de IR adiantado a cada 6 meses e o resto completado no resgate.
 - **Ganho acima da inflação,** com os aportes corrigidos pelo IPCA.
 - **CDB × LCI:** quanto o CDB precisa pagar para empatar com a LCI no seu prazo.
 - **Link da simulação.** Os valores ficam no endereço: é só copiar e mandar.
 
 <img src="docs/grafico.png" alt="Gráfico de quanto cada investimento já rendeu, mês a mês" width="100%" />
+
+<img src="docs/meta.png" alt="Modo meta: quanto guardar por mês em cada investimento para juntar R$ 100 mil em 5 anos" width="100%" />
 
 ## 🧠 As regras usadas
 
@@ -46,10 +52,12 @@ e já descontando o que ninguém lembra: **IR regressivo, custódia da B3 e infl
 | CDB | % do CDI, com IR regressivo |
 | LCI/LCA | % do CDI, sem IR |
 | Tesouro Selic | Selic efetiva, com IR e 0,20% a.a. de custódia acima de R$ 10 mil |
+| Tesouro IPCA+ | IPCA dos últimos 12 meses + juro real, com IR e 0,20% a.a. de custódia |
+| Fundo DI | % do CDI menos a taxa de administração, com come-cotas semestral de 15% |
 | Prefixado | taxa fixa ao ano, com IR |
 | IR | 22,5% até 180 dias, 20% até 360, 17,5% até 720 e 15% depois |
 
-É uma simulação educativa: as taxas de hoje ficam paradas pelo período todo, sem IOF (resgates com menos de 30 dias) e sem o limite do FGC. Não é recomendação de investimento.
+É uma simulação educativa: as taxas de hoje (e o IPCA dos últimos 12 meses) ficam paradas pelo período todo, sem IOF (resgates com menos de 30 dias) e sem o limite do FGC. Não é recomendação de investimento.
 
 ## 🧪 Testes
 
@@ -57,7 +65,7 @@ e já descontando o que ninguém lembra: **IR regressivo, custódia da B3 e infl
 npm test
 ```
 
-10 testes cobrem a tabela do IR, as duas regras da poupança, o CDB com IR, a isenção da LCI, a custódia do Tesouro só acima de R$ 10 mil, o IR de cada aporte pela própria idade, o ganho real e a equivalência CDB × LCI.
+14 testes cobrem a tabela do IR, as duas regras da poupança, o CDB com IR, a isenção da LCI, a custódia do Tesouro, o Tesouro IPCA+, o come-cotas do fundo DI mordida por mordida, o IR de cada aporte pela própria idade, o ganho real, a equivalência CDB × LCI e a busca do aporte da meta, no centavo.
 
 ## 🚀 Rodar localmente
 
@@ -80,7 +88,7 @@ src/
 │   └── chart.tsx        # gráfico com Recharts
 └── lib/
     ├── rates.ts         # séries do Banco Central (SGS)
-    ├── calc.ts          # simulação mês a mês, IR por aporte e custódia
+    ├── calc.ts          # simulação mês a mês, IR por aporte, come-cotas, custódia e meta
     └── calc.test.ts     # testes
 ```
 

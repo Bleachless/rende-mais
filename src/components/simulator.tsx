@@ -1,12 +1,24 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { brl, cdbEquivalent, irRate, pct, periodLabel, simulateAll, type Inputs, type ProductId, type Rates } from "@/lib/calc";
+import { brl, cdbEquivalent, irRate, monthlyFor, pct, periodLabel, products, simulate, simulateAll, type Inputs, type ProductId, type Rates, type Result } from "@/lib/calc";
 import { COLOR, GrowthChart } from "./chart";
 
-const DEFAULTS: Inputs = { initial: 10_000, monthly: 500, months: 24, cdbPct: 100, lciPct: 90, prefixado: 14 };
+type Mode = "simular" | "meta";
+const DEFAULTS: Inputs = { initial: 10_000, monthly: 500, months: 24, cdbPct: 100, lciPct: 90, prefixado: 14, ipcaReal: 7, fundoPct: 100, fundoFee: 0.5 };
+const DEFAULT_GOAL = 50_000;
 const PERIODS = [6, 12, 24, 36, 60, 120];
-const PARAMS: Record<keyof Inputs, string> = { initial: "v", monthly: "a", months: "p", cdbPct: "cdb", lciPct: "lci", prefixado: "pre" };
+const PARAMS: Record<keyof Inputs, string> = {
+  initial: "v",
+  monthly: "a",
+  months: "p",
+  cdbPct: "cdb",
+  lciPct: "lci",
+  prefixado: "pre",
+  ipcaReal: "ipca",
+  fundoPct: "fdi",
+  fundoFee: "tx",
+};
 const LIMITS: Record<keyof Inputs, [number, number]> = {
   initial: [0, 100_000_000],
   monthly: [0, 10_000_000],
@@ -14,21 +26,32 @@ const LIMITS: Record<keyof Inputs, [number, number]> = {
   cdbPct: [1, 300],
   lciPct: [1, 300],
   prefixado: [0, 100],
+  ipcaReal: [0, 50],
+  fundoPct: [1, 300],
+  fundoFee: [0, 10],
 };
 
-function fromSearch(search: string): Inputs {
+type Start = { i: Inputs; mode: Mode; goal: number };
+const START: Start = { i: DEFAULTS, mode: "simular", goal: DEFAULT_GOAL };
+
+function fromSearch(search: string): Start {
   const q = new URLSearchParams(search);
   const out = { ...DEFAULTS };
   for (const k of Object.keys(PARAMS) as (keyof Inputs)[]) {
     const v = Number(q.get(PARAMS[k])?.replace(",", "."));
     if (q.has(PARAMS[k]) && Number.isFinite(v)) out[k] = Math.min(LIMITS[k][1], Math.max(LIMITS[k][0], v));
   }
-  return out;
+  const g = Number(q.get("meta"));
+  return { i: out, mode: q.has("meta") ? "meta" : "simular", goal: Number.isFinite(g) && g > 0 ? Math.min(1_000_000_000, g) : DEFAULT_GOAL };
 }
 
-function toSearch(i: Inputs) {
+function toSearch(i: Inputs, mode: Mode, goal: number) {
   const q = new URLSearchParams();
-  for (const k of Object.keys(PARAMS) as (keyof Inputs)[]) if (i[k] !== DEFAULTS[k]) q.set(PARAMS[k], String(i[k]));
+  if (mode === "meta") q.set("meta", String(goal));
+  for (const k of Object.keys(PARAMS) as (keyof Inputs)[]) {
+    if (mode === "meta" && k === "monthly") continue;
+    if (i[k] !== DEFAULTS[k]) q.set(PARAMS[k], String(i[k]));
+  }
   const s = q.toString();
   return s ? `?${s}` : "";
 }
@@ -96,14 +119,14 @@ function MoneyField({ label, value, onChange }: { label: string; value: number; 
   );
 }
 
-function PctField({ label, value, onChange, suffix }: { label: string; value: number; onChange: (n: number) => void; suffix: string }) {
+function PctField({ label, value, onChange, suffix, step = 0.5 }: { label: string; value: number; onChange: (n: number) => void; suffix: string; step?: number }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm text-muted">{label}</span>
       <span className="flex items-center rounded-xl border border-line bg-bg px-3 transition focus-within:border-up">
         <input
           type="number"
-          step="0.5"
+          step={step}
           min={0}
           value={value}
           onChange={(e) => onChange(Math.max(0, Math.min(300, Number(e.target.value) || 0)))}
@@ -115,8 +138,84 @@ function PctField({ label, value, onChange, suffix }: { label: string; value: nu
   );
 }
 
-function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; syncUrl: boolean }) {
-  const [i, setI] = useState<Inputs>(initial);
+type Plan = { need: number | null; result: Result };
+
+// Modo meta: quanto guardar por mês em cada investimento para juntar o valor no prazo.
+function Goal({ plans, goal, i }: { plans: Plan[]; goal: number; i: Inputs }) {
+  const ok = plans.filter((x) => x.need !== null).sort((a, b) => a.need! - b.need!);
+  const best = ok[0];
+  const poup = plans.find((x) => x.result.product.id === "poupanca");
+  if (!best) {
+    return (
+      <div className="rounded-2xl border border-line bg-panel p-6">
+        <p className="text-2xl font-semibold">Em 1 mês não dá tempo de aportar.</p>
+        <p className="mt-2 text-muted">Aumente o prazo para ver quanto guardar por mês.</p>
+      </div>
+    );
+  }
+  const max = Math.max(...ok.map((x) => x.need!), 1);
+  return (
+    <>
+      <div key={`${best.result.product.id}-${i.months}-${goal}`} className="anim-rise rounded-2xl border border-line bg-panel p-6">
+        <p className="text-sm text-muted">
+          Pra juntar {brl(goal, 0)} em {periodLabel(i.months)}
+          {i.initial ? `, começando com ${brl(i.initial, 0)}` : ""}, o caminho mais leve é
+        </p>
+        <p className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl" style={{ color: COLOR[best.result.product.id] }}>
+          {best.result.product.name}
+        </p>
+        {best.need === 0 ? (
+          <p className="mt-3 text-2xl font-medium">Você já chega lá sem aportar nada. 🎉</p>
+        ) : (
+          <p className="num mt-3 text-4xl font-medium tracking-tight sm:text-5xl">
+            {brl(best.need!)}
+            <span className="text-xl text-muted"> /mês</span>
+          </p>
+        )}
+        {poup?.need != null && poup.result.product.id !== best.result.product.id && poup.need > best.need! && (
+          <p className="mt-2 text-muted">
+            <span className="text-up">{brl(poup.need - best.need!)} a menos por mês</span> do que na poupança
+          </p>
+        )}
+      </div>
+      <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {plans
+          .slice()
+          .sort((a, b) => (a.need ?? Infinity) - (b.need ?? Infinity))
+          .map(({ need, result: r }, k) => (
+            <li key={r.product.id} className="relative overflow-hidden rounded-2xl border border-line bg-panel p-4">
+              <span className="absolute inset-x-0 top-0 h-0.5" style={{ background: COLOR[r.product.id] }} />
+              <p className="flex items-center gap-2 font-semibold">
+                <span className="num text-xs text-dim">{k + 1}º</span>
+                {r.product.name}
+              </p>
+              <p className="text-xs text-muted">{r.product.detail}</p>
+              <p className="num mt-4 text-2xl font-medium">
+                {need === null ? "—" : brl(need)}
+                <span className="text-sm text-muted"> /mês</span>
+              </p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-panel-2">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${need === null ? 0 : Math.max(2, (need / max) * 100)}%`, background: COLOR[r.product.id] }} />
+              </div>
+              <dl className="num mt-3 grid grid-cols-2 gap-y-1 text-xs">
+                <dt className="text-dim">Você guarda</dt>
+                <dd className="text-right text-text">{brl(r.invested)}</dd>
+                <dt className="text-dim">Rendimento</dt>
+                <dd className="text-right text-up">+{brl(r.gain)}</dd>
+                <dt className="text-dim">IR e taxas</dt>
+                <dd className="text-right text-muted">{r.ir + r.fees > 0.005 ? `−${brl(r.ir + r.fees)}` : "isento"}</dd>
+              </dl>
+            </li>
+          ))}
+      </ol>
+    </>
+  );
+}
+
+function Calc({ rates, start, syncUrl }: { rates: Rates; start: Start; syncUrl: boolean }) {
+  const [i, setI] = useState<Inputs>(start.i);
+  const [mode, setMode] = useState<Mode>(start.mode);
+  const [goal, setGoal] = useState(start.goal);
   const [hidden, setHidden] = useState<Set<ProductId>>(new Set());
   const [copied, setCopied] = useState(false);
   const set = (patch: Partial<Inputs>) => setI((x) => ({ ...x, ...patch }));
@@ -124,10 +223,18 @@ function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; sync
   // A simulação fica no endereço, para dar pra mandar o link. A primeira pintura (antes de ler o
   // endereço) não escreve nada, senão apagaria os parâmetros de quem abriu um link.
   useEffect(() => {
-    if (syncUrl) history.replaceState(null, "", `${location.pathname}${toSearch(i)}`);
-  }, [i, syncUrl]);
+    if (syncUrl) history.replaceState(null, "", `${location.pathname}${toSearch(i, mode, goal)}`);
+  }, [i, mode, goal, syncUrl]);
 
-  const results = simulateAll(rates, i);
+  // No modo meta, cada investimento é simulado com o aporte que ele precisa para chegar lá.
+  const plans =
+    mode === "meta"
+      ? products(rates, i).map((p) => {
+          const need = monthlyFor(p, i, goal, rates.ipca12);
+          return { need, result: simulate(p, { ...i, monthly: need ?? 0 }, rates.ipca12) };
+        })
+      : [];
+  const results = mode === "meta" ? plans.map((x) => x.result) : simulateAll(rates, i);
   const ranked = [...results].sort((a, b) => b.net - a.net);
   const best = ranked[0];
   const poup = results.find((r) => r.product.id === "poupanca")!;
@@ -141,13 +248,32 @@ function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; sync
       <section className="mx-auto mt-10 grid max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
         {/* Formulário */}
         <div className="h-fit rounded-2xl border border-line bg-panel p-5 lg:sticky lg:top-6">
-          <p className="num text-xs uppercase tracking-[0.2em] text-dim">Sua simulação</p>
+          <div className="grid grid-cols-2 rounded-xl border border-line bg-bg p-1 text-sm" role="radiogroup" aria-label="Modo">
+            {(
+              [
+                ["simular", "Simular"],
+                ["meta", "Tenho uma meta"],
+              ] as const
+            ).map(([m, label]) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={mode === m}
+                onClick={() => setMode(m)}
+                className={`rounded-lg px-3 py-2 font-medium transition ${mode === m ? "bg-panel-2 text-text shadow" : "text-muted hover:text-text"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="mt-4 space-y-4">
+            {mode === "meta" && <MoneyField label="Quanto quer juntar" value={goal} onChange={(g) => setGoal(Math.max(1, g))} />}
             <MoneyField label="Quanto você tem hoje" value={i.initial} onChange={(initial) => set({ initial })} />
-            <MoneyField label="Quanto vai guardar por mês" value={i.monthly} onChange={(monthly) => set({ monthly })} />
+            {mode === "simular" && <MoneyField label="Quanto vai guardar por mês" value={i.monthly} onChange={(monthly) => set({ monthly })} />}
             <div>
               <div className="mb-1.5 flex items-baseline justify-between">
-                <span className="text-sm text-muted">Por quanto tempo</span>
+                <span className="text-sm text-muted">{mode === "meta" ? "Em quanto tempo" : "Por quanto tempo"}</span>
                 <span className="num text-sm text-text">{periodLabel(i.months)}</span>
               </div>
               <input type="range" min={1} max={120} value={Math.min(120, i.months)} onChange={(e) => set({ months: Number(e.target.value) })} className="w-full" aria-label="Prazo em meses" />
@@ -168,7 +294,10 @@ function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; sync
               <PctField label="CDB paga" value={i.cdbPct} onChange={(cdbPct) => set({ cdbPct })} suffix="% CDI" />
               <PctField label="LCI/LCA paga" value={i.lciPct} onChange={(lciPct) => set({ lciPct })} suffix="% CDI" />
               <PctField label="Prefixado" value={i.prefixado} onChange={(prefixado) => set({ prefixado })} suffix="% a.a." />
-              <div className="flex items-end">
+              <PctField label="Tesouro IPCA+" value={i.ipcaReal} onChange={(ipcaReal) => set({ ipcaReal })} suffix="+ IPCA" />
+              <PctField label="Fundo DI paga" value={i.fundoPct} onChange={(fundoPct) => set({ fundoPct })} suffix="% CDI" />
+              <PctField label="Taxa do fundo" value={i.fundoFee} onChange={(fundoFee) => set({ fundoFee })} suffix="% a.a." step={0.1} />
+              <div className="col-span-2">
                 <button
                   type="button"
                   onClick={async () => {
@@ -186,6 +315,10 @@ function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; sync
         </div>
 
         <div className="min-w-0 space-y-6">
+          {mode === "meta" ? (
+            <Goal plans={plans} goal={goal} i={i} />
+          ) : (
+          <>
           {/* Veredito */}
           <div key={`${best.product.id}-${i.months}`} className="anim-rise rounded-2xl border border-line bg-panel p-6">
             <p className="text-sm text-muted">
@@ -231,7 +364,7 @@ function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; sync
                   <dd className="text-right text-up">+{brl(r.gain)}</dd>
                   <dt className="text-dim">IR</dt>
                   <dd className="text-right text-muted">{r.ir > 0.005 ? `−${brl(r.ir)}` : "isento"}</dd>
-                  {r.product.custody && (
+                  {r.product.custodyFree !== null && (
                     <>
                       <dt className="text-dim">Custódia B3</dt>
                       <dd className="text-right text-muted">{r.fees > 0.005 ? `−${brl(r.fees)}` : "isento"}</dd>
@@ -246,13 +379,17 @@ function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; sync
               </li>
             ))}
           </ol>
+          </>
+          )}
 
           {/* Gráfico */}
           <div className="rounded-2xl border border-line bg-panel p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <div>
-                <p className="font-semibold">Quanto já rendeu, mês a mês</p>
-                <p className="text-sm text-muted">Se resgatar naquele mês, já sem IR e taxa de custódia.</p>
+                <p className="font-semibold">{mode === "meta" ? "O caminho até a meta" : "Quanto já rendeu, mês a mês"}</p>
+                <p className="text-sm text-muted">
+                  {mode === "meta" ? "Cada um com o aporte que precisa. Saldo líquido, se resgatar naquele mês." : "Se resgatar naquele mês, já sem IR e taxa de custódia."}
+                </p>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {results.map((r) => {
@@ -280,7 +417,7 @@ function Calc({ rates, initial, syncUrl }: { rates: Rates; initial: Inputs; sync
               </div>
             </div>
             <div className="mt-4">
-              <GrowthChart results={results} hidden={hidden} />
+              <GrowthChart results={results} hidden={hidden} goal={mode === "meta" ? goal : undefined} />
             </div>
           </div>
 
@@ -336,8 +473,8 @@ export function Simulator({ rates }: { rates: Rates }) {
             <span className="bg-gradient-to-r from-up via-blue to-violet bg-clip-text text-transparent">de verdade?</span>
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-muted">
-            Poupança, CDB, LCI/LCA, Tesouro Selic e prefixado lado a lado, com as taxas de hoje e já descontando o que ninguém lembra: IR regressivo,
-            custódia da B3 e inflação.
+            Poupança, CDB, LCI/LCA, Tesouro Selic, Tesouro IPCA+, fundo DI e prefixado lado a lado, com as taxas de hoje e já descontando o que
+            ninguém lembra: IR regressivo, come-cotas, custódia da B3 e inflação. Ou diga a sua meta e veja quanto guardar por mês.
           </p>
           {!rates.live && (
             <p className="mt-4 inline-block rounded-lg border border-amber/40 bg-amber/10 px-3 py-1.5 text-sm text-amber">
@@ -345,7 +482,7 @@ export function Simulator({ rates }: { rates: Rates }) {
             </p>
           )}
         </section>
-        <Calc key={hydrated ? "url" : "padrao"} rates={rates} initial={hydrated ? fromSearch(location.search) : DEFAULTS} syncUrl={hydrated} />
+        <Calc key={hydrated ? "url" : "padrao"} rates={rates} start={hydrated ? fromSearch(location.search) : START} syncUrl={hydrated} />
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-12 pt-16 text-sm text-dim sm:px-6">
         <p>

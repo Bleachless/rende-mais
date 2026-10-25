@@ -1,6 +1,6 @@
 "use client";
 
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { brl, periodLabel, type ProductId, type Result } from "@/lib/calc";
 
 export const COLOR: Record<ProductId, string> = {
@@ -8,7 +8,19 @@ export const COLOR: Record<ProductId, string> = {
   cdb: "#5aa9ff",
   lci: "#3ddc97",
   selic: "#a78bfa",
+  ipca: "#fb923c",
+  fundo: "#22d3ee",
   pre: "#ff6b9a",
+};
+
+export const NAME: Record<ProductId, string> = {
+  poupanca: "Poupança",
+  cdb: "CDB",
+  lci: "LCI/LCA",
+  selic: "Tesouro Selic",
+  ipca: "Tesouro IPCA+",
+  fundo: "Fundo DI",
+  pre: "Prefixado",
 };
 
 const short = (n: number) =>
@@ -16,31 +28,34 @@ const short = (n: number) =>
 
 type Row = { m: number } & Partial<Record<ProductId, number>>;
 
-function Tip({ active, payload, label }: { active?: boolean; payload?: { dataKey: ProductId; value: number }[]; label?: number }) {
+function Tip({ active, payload, label, total }: { active?: boolean; payload?: { dataKey: ProductId; value: number }[]; label?: number; total?: boolean }) {
   if (!active || !payload?.length) return null;
   const rows = [...payload].sort((a, b) => b.value - a.value);
   return (
     <div className="rounded-xl border border-line bg-panel-2/95 px-3.5 py-3 text-sm shadow-2xl backdrop-blur">
-      <p className="mb-2 text-xs text-muted">{label ? `Rendeu até ${periodLabel(label)}` : "Hoje"}</p>
+      <p className="mb-2 text-xs text-muted">{label ? `${total ? "Saldo em" : "Rendeu até"} ${periodLabel(label)}` : "Hoje"}</p>
       {rows.map((r) => (
         <p key={r.dataKey} className="flex items-center justify-between gap-6">
           <span className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full" style={{ background: COLOR[r.dataKey] }} />
-            {r.dataKey === "lci" ? "LCI/LCA" : r.dataKey === "selic" ? "Tesouro Selic" : r.dataKey === "pre" ? "Prefixado" : r.dataKey === "cdb" ? "CDB" : "Poupança"}
+            {NAME[r.dataKey]}
           </span>
-          <span className="num">+{brl(r.value)}</span>
+          <span className="num">
+            {total ? "" : "+"}
+            {brl(r.value)}
+          </span>
         </p>
       ))}
     </div>
   );
 }
 
-// Quanto já rendeu, líquido de IR e custódia, se você resgatar em cada mês.
-export function GrowthChart({ results, hidden }: { results: Result[]; hidden: Set<ProductId> }) {
+// Quanto já rendeu (ou o saldo, no modo meta), líquido de IR e custódia, se você resgatar em cada mês.
+export function GrowthChart({ results, hidden, goal }: { results: Result[]; hidden: Set<ProductId>; goal?: number }) {
   const months = results[0]?.series.length ?? 0;
   const data: Row[] = Array.from({ length: months }, (_, m) => {
     const row: Row = { m };
-    for (const r of results) row[r.product.id] = Math.round(r.gains[m] * 100) / 100;
+    for (const r of results) row[r.product.id] = Math.round((goal ? r.series[m] : r.gains[m]) * 100) / 100;
     return row;
   });
   const step = months > 60 ? 12 : months > 24 ? 6 : months > 12 ? 3 : 1;
@@ -58,7 +73,8 @@ export function GrowthChart({ results, hidden }: { results: Result[]; hidden: Se
           tickFormatter={(m: number) => (m === 0 ? "hoje" : m % 12 === 0 ? `${m / 12}a` : `${m}m`)}
         />
         <YAxis stroke="#5b6678" tickLine={false} axisLine={false} fontSize={12} width={64} tickFormatter={short} />
-        <Tooltip content={<Tip />} cursor={{ stroke: "#5b6678", strokeDasharray: "4 4" }} />
+        <Tooltip content={<Tip total={!!goal} />} cursor={{ stroke: "#5b6678", strokeDasharray: "4 4" }} />
+        {goal ? <ReferenceLine y={goal} stroke="#3ddc97" strokeDasharray="6 4" label={{ value: "meta", fill: "#3ddc97", fontSize: 12, position: "insideTopLeft" }} /> : null}
         {results
           .filter((r) => !hidden.has(r.product.id))
           .map((r) => (
