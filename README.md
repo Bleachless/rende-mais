@@ -4,6 +4,8 @@
 
 <br />
 
+[![Abrir o app](https://img.shields.io/badge/%E2%96%B6_Abrir_o_app-rende--mais--swart.vercel.app-3ddc97?style=for-the-badge)](https://rende-mais-swart.vercel.app)
+
 [![CI](https://github.com/Bleachless/rende-mais/actions/workflows/ci.yml/badge.svg)](https://github.com/Bleachless/rende-mais/actions/workflows/ci.yml)
 ![Next.js](https://img.shields.io/badge/Next.js_16-0a0d12?style=flat-square&logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-0a0d12?style=flat-square&logo=react&logoColor=61dafb)
