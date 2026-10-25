@@ -88,6 +88,6 @@ src/
 
 Feito por **[João Vaz](https://github.com/Bleachless)**, desenvolvedor full stack que trabalha no setor financeiro.
 <br />
-Veja também o **[Racha](https://github.com/Bleachless/racha)** 🧾 e o **[Cofrinho](https://github.com/Bleachless/cofrinho)** 🐷
+Veja também o **[Racha](https://github.com/Bleachless/racha-pix)** 🧾 e o **[Cofrinho](https://github.com/Bleachless/cofrinho)** 🐷
 
 </div>
