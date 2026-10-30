@@ -491,7 +491,7 @@ export function Simulator({ rates }: { rates: Rates }) {
         </p>
         <p className="mt-2">
           Feito por{" "}
-          <a href="https://portifolio-joao-vaz.vercel.app" className="text-muted underline-offset-4 hover:text-text hover:underline">
+          <a href="https://joaovaz.dev" className="text-muted underline-offset-4 hover:text-text hover:underline">
             João Vaz
           </a>
           .
