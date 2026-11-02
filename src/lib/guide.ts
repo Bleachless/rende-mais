@@ -21,6 +21,12 @@ export const SOURCES = {
     href: "https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/consultas/mercado-de-derivativos/indicadores/indicadores-financeiros/",
   },
   ipca: { label: "IBGE: inflação", href: "https://www.ibge.gov.br/explica/inflacao.php" },
+  copom: { label: "Banco Central: o que é o Copom", href: "https://www.bcb.gov.br/controleinflacao/copom" },
+  autonomia: { label: "Lei Complementar 179/2021 (autonomia do BC)", href: "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp179.htm" },
+  meta: { label: "Decreto 12.079/2024 (meta contínua de inflação)", href: "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2024/decreto/D12079.htm" },
+  metaBc: { label: "Banco Central: meta de inflação", href: "https://www.bcb.gov.br/controleinflacao/metainflacao" },
+  investidor: { label: "Portal do Investidor (CVM)", href: "https://www.gov.br/investidor/pt-br" },
+  iof: { label: "Decreto 6.306/2007 (tabela do IOF)", href: "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2007/decreto/d6306.htm" },
 } satisfies Record<string, Source>;
 
 export type Guide = {

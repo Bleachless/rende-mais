@@ -90,8 +90,19 @@ input[type="range"] {
 .mascot-pop { transform-box: fill-box; transform-origin: 50% 100%; animation: mascot-pop 0.35s ease-out; }
 .mascot-shake { transform-box: fill-box; transform-origin: 50% 100%; animation: mascot-shake 0.35s ease-in-out 3; }
 
+/* "Investir é emprestar": a moeda vai e volta com juros. */
+@keyframes lend {
+  0% { left: 0; opacity: 0; }
+  15%, 85% { opacity: 1; }
+  100% { left: calc(100% - 1.25rem); opacity: 0; }
+}
+.lend-go { animation: lend 2s ease-in-out infinite; }
+.lend-back { animation: lend 2s ease-in-out 1s infinite reverse; }
+
 @media (prefers-reduced-motion: reduce) {
   .anim-ticker, .anim-rise, .mascot-bob, .mascot-eye, .mascot-wave, .mascot-pop, .mascot-shake { animation: none; }
+  .lend-go, .lend-back { animation: none; }
+  .lend-back { right: 0; }
 }
 
 .recharts-cartesian-axis-tick-value {

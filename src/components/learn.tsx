@@ -105,7 +105,7 @@ export function Learn({ rates }: { rates: Rates }) {
         Tesouro Direto, IBGE) para você conferir.
       </p>
       <Link href="/aprenda" className="mt-3 inline-block text-sm text-up underline-offset-4 hover:underline">
-        Prefere ver acontecer? Tutorial animado de inflação e juros compostos →
+        Prefere ver acontecer? Tutorial animado: inflação, juros, Banco Central, Selic, IR e liquidez →
       </Link>
       <p className="mt-4 max-w-3xl rounded-xl border border-amber/40 bg-amber/10 px-4 py-3 text-sm leading-relaxed text-amber">
         Conteúdo educativo e geral: não é recomendação de investimento. Cada pessoa tem objetivos, prazos e riscos diferentes. Antes de aplicar, leia as condições do
@@ -143,13 +143,14 @@ export function Learn({ rates }: { rates: Rates }) {
             </div>
           </dl>
         </Concept>
-        <Concept title="Imposto de renda" sources={[SOURCES.ir]}>
+        <Concept title="Imposto de renda" sources={[SOURCES.ir, SOURCES.iof]}>
           <p>
             Na maior parte da renda fixa, o IR é cobrado no resgate e só sobre o rendimento, nunca sobre o que você colocou. E ele cai com o tempo:{" "}
             <span className="num text-text">22,5%</span> até 6 meses, <span className="num text-text">20%</span> até 1 ano,{" "}
             <span className="num text-text">17,5%</span> até 2 anos e <span className="num text-text">15%</span> depois.
           </p>
           <p>Poupança e LCI/LCA são isentas para pessoa física.</p>
+          <p>E antes de 30 dias ainda tem IOF: colocou hoje e tirou amanhã, ele leva 96% do rendimento (e o IR, 22,5% do que sobrar).</p>
         </Concept>
         <Concept title="Liquidez × prazo">
           <p>

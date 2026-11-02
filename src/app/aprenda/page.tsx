@@ -5,14 +5,20 @@ import { DEFAULTS, products } from "@/lib/calc";
 import { SOURCES, type Source } from "@/lib/guide";
 import { getIpcaHistory, getRates } from "@/lib/rates";
 import { Sources } from "@/components/learn";
-import { InflationScene, SnowballScene } from "@/components/lessons";
+import { CopomScene } from "@/components/lessons/copom";
+import { InflationScene } from "@/components/lessons/inflation";
+import { LendingScene } from "@/components/lessons/lending";
+import { LiquidityScene } from "@/components/lessons/liquidity";
+import { SelicScene } from "@/components/lessons/selic";
+import { SnowballScene } from "@/components/lessons/snowball";
+import { TaxScene } from "@/components/lessons/tax";
 import { Bubble, Mascot } from "@/components/mascot";
 import { SiteHeader } from "@/components/site";
 
 export const metadata: Metadata = {
-  title: "Aprenda: inflação e juros compostos, animados · Rende Mais",
+  title: "Aprenda: inflação, juros, Banco Central, Copom, Selic e IR, animados · Rende Mais",
   description:
-    "Um tutorial animado, com os números reais do IBGE e do Banco Central: por que a inflação encolhe o seu dinheiro e como os juros compostos fazem ele crescer.",
+    "Um tutorial animado, com os números reais do IBGE e do Banco Central: inflação, juros compostos, o que fazem o Banco Central e o Copom, Selic e CDI, para quem você empresta quando investe, o imposto de renda e a liquidez.",
   alternates: { canonical: "/aprenda" },
 };
 
@@ -28,8 +34,26 @@ const CALC_CORRECAO: Source = {
 const CHAPTERS = [
   { id: "inflacao", title: "Inflação" },
   { id: "juros-compostos", title: "Juros compostos" },
+  { id: "banco-central", title: "Banco Central e Copom" },
+  { id: "selic-cdi", title: "Selic e CDI" },
+  { id: "investir-e-emprestar", title: "Investir é emprestar" },
+  { id: "imposto-de-renda", title: "O leão do IR" },
+  { id: "liquidez", title: "Liquidez × prazo" },
+  { id: "quem-e-quem", title: "Quem é quem" },
 ];
-const NEXT = ["Selic e CDI", "Investir é emprestar", "O leão do IR", "Liquidez × prazo"];
+
+// Quem é quem no seu dinheiro: uma linha para cada instituição que aparece no tutorial.
+const WHO = [
+  { icon: "🏦", name: "Banco Central (BC)", text: "Cuida da inflação, fiscaliza os bancos, emite o real e opera o Pix." },
+  { icon: "🗳️", name: "Copom", text: "O comitê do BC (presidente e diretores) que decide a Selic a cada 45 dias." },
+  { icon: "🏛️", name: "CMN", text: "O Conselho Monetário Nacional: define a meta de inflação e as grandes regras do sistema, como a carência da LCI e da LCA." },
+  { icon: "📜", name: "Tesouro Nacional", text: "Pega dinheiro emprestado em nome do governo, vendendo títulos públicos (os do Tesouro Direto)." },
+  { icon: "📊", name: "IBGE", text: "Mede a inflação oficial, o IPCA, todo mês." },
+  { icon: "🛡️", name: "FGC", text: "Fundo mantido pelos próprios bancos que devolve até R$ 250 mil por CPF se um banco quebrar." },
+  { icon: "📈", name: "B3", text: "A bolsa do Brasil: guarda os títulos do Tesouro Direto e calcula o CDI." },
+  { icon: "🔎", name: "CVM", text: "Fiscaliza fundos de investimento, corretoras e o mercado de capitais." },
+  { icon: "🦁", name: "Receita Federal", text: "Cobra o imposto de renda dos investimentos." },
+];
 
 function Chapter({ n, id, title, intro, take, sources, children }: { n: number; id: string; title: string; intro: ReactNode; take: string[]; sources: Source[]; children: ReactNode }) {
   return (
@@ -88,8 +112,7 @@ export default async function Page() {
                   {c.title}
                 </a>
               ))}
-              <span className="px-1 text-xs text-dim">em breve: {NEXT.join(" · ")}</span>
-            </nav>
+              </nav>
           </div>
           <div className="flex items-center gap-4 lg:flex-col lg:items-start">
             <Mascot face="happy" arms="wave" className="h-28 w-24 shrink-0 lg:h-44 lg:w-36" />
@@ -142,6 +165,133 @@ export default async function Page() {
         >
           <SnowballScene cdi={rates.cdi} poupanca={poupanca} />
         </Chapter>
+
+        <Chapter
+          n={3}
+          id="banco-central"
+          title="Quem manda nos juros: o Banco Central e o Copom"
+          intro={
+            <p>
+              Todo mundo fala da Selic, mas quem decide? E por quê? Vá passo a passo com o Rendinho: o que é o <b className="text-text">Banco Central</b>, qual a
+              missão dele, como funciona uma reunião do <b className="text-text">Copom</b> e o efeito dominó de cada decisão até chegar no seu bolso.
+            </p>
+          }
+          take={[
+            "O Banco Central é o banco dos bancos: cuida da inflação, fiscaliza os bancos, emite o real e opera o Pix.",
+            "A meta de inflação é 3% ao ano, com 1,5 ponto de tolerância; quem a define é o Conselho Monetário Nacional.",
+            "O Copom decide a Selic a cada 45 dias. Juros mais altos freiam a economia e a inflação; juros mais baixos aceleram.",
+          ]}
+          sources={[SOURCES.copom, SOURCES.autonomia, SOURCES.meta, SOURCES.metaBc]}
+        >
+          <CopomScene selic={rates.selic} />
+        </Chapter>
+
+        <Chapter
+          n={4}
+          id="selic-cdi"
+          title="Selic e CDI: o termostato da economia"
+          intro={
+            <p>
+              A Selic é a taxa básica de juros do país. O <b className="text-text">CDI</b> é a taxa que os bancos cobram para emprestar entre si, e anda colado
+              nela. Por isso quase toda a renda fixa sobe e desce junto com a Selic. Mexa no termostato e veja o que muda.
+            </p>
+          }
+          take={[
+            "Selic alta: crédito caro e renda fixa rendendo mais. Selic baixa: crédito barato e renda fixa rendendo menos.",
+            "O CDI fica colado na Selic; por isso \"100% do CDI\" é a régua para comparar a renda fixa.",
+            "Com a Selic em 8,5% ou menos, a poupança deixa de render 0,5% ao mês e passa a render 70% da Selic.",
+          ]}
+          sources={[SOURCES.selic, SOURCES.cdi, SOURCES.poupanca]}
+        >
+          <SelicScene selic={rates.selic} cdi={rates.cdi} tr={rates.tr} />
+        </Chapter>
+
+        <Chapter
+          n={5}
+          id="investir-e-emprestar"
+          title="Investir é emprestar"
+          intro={
+            <p>
+              Na renda fixa, investir é emprestar dinheiro para alguém que devolve com juros. A pergunta que importa é: <b className="text-text">para quem</b>, e{" "}
+              <b className="text-text">quem garante</b> se der errado?
+            </p>
+          }
+          take={[
+            "Banco (CDB, LCI, LCA, poupança): o FGC garante até R$ 250 mil por CPF em cada instituição.",
+            "Governo (Tesouro Direto): quem garante é o Tesouro Nacional, o menor risco do país.",
+            "Empresa (debêntures, CRI, CRA): não tem FGC. Paga mais porque o risco é maior.",
+          ]}
+          sources={[SOURCES.fgc, SOURCES.tesouro, SOURCES.investidor]}
+        >
+          <LendingScene />
+        </Chapter>
+
+        <Chapter
+          n={6}
+          id="imposto-de-renda"
+          title="O leão do IR"
+          intro={
+            <>
+              <p>
+                Investir não é só colocar o dinheiro e pronto: na maior parte da renda fixa (CDB, Tesouro, fundos), o rendimento paga imposto de renda, e quanto
+                ele morde depende de <b className="text-text">quanto tempo o dinheiro ficou aplicado</b>.
+              </p>
+              <p>
+                Pra que serve essa tabela? É um incentivo do governo para quem deixa o dinheiro investido por mais tempo: de 22,5% em até 6 meses, a mordida cai
+                até 15% depois de 2 anos. E se tirar antes de 30 dias, ainda tem o IOF.
+              </p>
+            </>
+          }
+          take={[
+            "O IR é cobrado só sobre o rendimento, nunca sobre o que você colocou, e já sai descontado no resgate.",
+            "Vai de 22,5% (até 6 meses) a 15% (mais de 2 anos): colocou hoje e tirou amanhã, paga a alíquota máxima.",
+            "Antes de 30 dias ainda tem IOF, que no dia seguinte leva 96% do rendimento.",
+            "Poupança, LCI e LCA são isentas de IR para pessoa física.",
+          ]}
+          sources={[SOURCES.ir, SOURCES.iof, SOURCES.fundos]}
+        >
+          <TaxScene cdi={rates.cdi} />
+        </Chapter>
+
+        <Chapter
+          n={7}
+          id="liquidez"
+          title="Liquidez × prazo"
+          intro={
+            <p>
+              <b className="text-text">Liquidez</b> é a facilidade de transformar o investimento em dinheiro sem perder nada. Uns saem no mesmo dia, outros ficam presos e
+              outros só saem antes do prazo pelo preço do dia. Escolha quando vai precisar e veja.
+            </p>
+          }
+          take={[
+            "Quem aceita prender o dinheiro por mais tempo costuma ganhar uma taxa maior.",
+            "Vender um título antes do vencimento sai pelo preço do dia, que pode ser maior ou menor que o combinado.",
+            "Dinheiro para emergências pede saque rápido; objetivos de anos aceitam prazos longos.",
+          ]}
+          sources={[SOURCES.tesouro, SOURCES.lciPrazo, SOURCES.poupanca]}
+        >
+          <LiquidityScene />
+        </Chapter>
+
+        <section id="quem-e-quem" aria-labelledby="quem-e-quem-titulo" className="mx-auto mt-20 max-w-6xl scroll-mt-6 px-4 sm:px-6">
+          <p className="num text-xs uppercase tracking-[0.25em] text-up">Pra consultar</p>
+          <h2 id="quem-e-quem-titulo" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+            Quem é quem no seu dinheiro
+          </h2>
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {WHO.map((w) => (
+              <li key={w.name} className="flex gap-3 rounded-2xl border border-line bg-panel p-4">
+                <span className="text-2xl" aria-hidden>
+                  {w.icon}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-semibold">{w.name}</span>
+                  <span className="mt-0.5 block text-sm leading-relaxed text-muted">{w.text}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6">
           <div className="flex flex-col gap-6 rounded-2xl border border-line bg-panel p-6 sm:flex-row sm:items-center sm:p-8">

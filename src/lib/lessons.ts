@@ -26,3 +26,18 @@ export const compound = (principal: number, ratePct: number, years: number) => p
 
 // Em quantos anos o dinheiro dobra a juros compostos.
 export const doublingYears = (ratePct: number) => Math.log(2) / Math.log(1 + ratePct / 100);
+
+// Rendimento bruto de `principal` a `ratePct` ao ano em `days` dias corridos.
+export const grossGain = (principal: number, ratePct: number, days: number) => principal * (Math.pow(1 + ratePct / 100, days / 365) - 1);
+
+// FGC: até R$ 250 mil por CPF em cada instituição. O que passar disso fica sem garantia.
+export const FGC_LIMIT = 250_000;
+export const fgcSplit = (amount: number) => ({ covered: Math.min(amount, FGC_LIMIT), uncovered: Math.max(0, amount - FGC_LIMIT) });
+
+// Liquidez: `lock` meses sem poder sacar, depois `market` meses em que só sai pelo preço do dia.
+export type Access = "livre" | "preso" | "mercado";
+export const access = (lock: number, market: number, month: number): Access => (month < lock ? "preso" : month < lock + market ? "mercado" : "livre");
+
+// IOF regressivo nos resgates antes de 30 dias (Decreto 6.306/2007, anexo): % do rendimento, do 1º ao 29º dia.
+export const IOF_TABLE = [96, 93, 90, 86, 83, 80, 76, 73, 70, 66, 63, 60, 56, 53, 50, 46, 43, 40, 36, 33, 30, 26, 23, 20, 16, 13, 10, 6, 3];
+export const iofRate = (days: number) => (days >= 1 && days < 30 ? IOF_TABLE[days - 1] / 100 : 0);
