@@ -41,3 +41,21 @@ export const access = (lock: number, market: number, month: number): Access => (
 // IOF regressivo nos resgates antes de 30 dias (Decreto 6.306/2007, anexo): % do rendimento, do 1º ao 29º dia.
 export const IOF_TABLE = [96, 93, 90, 86, 83, 80, 76, 73, 70, 66, 63, 60, 56, 53, 50, 46, 43, 40, 36, 33, 30, 26, 23, 20, 16, 13, 10, 6, 3];
 export const iofRate = (days: number) => (days >= 1 && days < 30 ? IOF_TABLE[days - 1] / 100 : 0);
+
+// Marcação a mercado: quanto vale hoje um título que paga `face` daqui a `years` anos, se o
+// mercado está pedindo `ratePct` ao ano. Juros sobem, preço cai; juros caem, preço sobe.
+export const titlePrice = (face: number, ratePct: number, years: number) => face / Math.pow(1 + ratePct / 100, years);
+
+// Reserva de emergência: em quantos meses guardando `monthly` por mês (rendendo `ratePct` ao ano)
+// se chega a `target`. Infinity se não guardar nada.
+export function monthsToSave(target: number, monthly: number, ratePct: number) {
+  if (target <= 0) return 0;
+  if (monthly <= 0) return Infinity;
+  const r = Math.pow(1 + ratePct / 100, 1 / 12) - 1;
+  let total = 0;
+  for (let m = 1; m <= 1200; m++) {
+    total = total * (1 + r) + monthly;
+    if (total >= target) return m;
+  }
+  return Infinity;
+}

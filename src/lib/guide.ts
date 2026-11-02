@@ -37,6 +37,7 @@ export type Guide = {
   liquidity: string; // quando dá pra sacar
   watch: string; // o que vale olhar antes
   sources: Source[];
+  learn: string; // capítulo do tutorial (/aprenda/...) que explica melhor
 };
 
 const FGC = "FGC até R$ 250 mil por CPF em cada instituição.";
@@ -52,6 +53,7 @@ export const GUIDE: Record<ProductId, Guide> = {
     liquidity: "Saca quando quiser, mas o que sair antes do aniversário perde o rendimento daquele mês.",
     watch: "Com a Selic acima de 8,5%, rende 0,5% ao mês + TR: costuma perder para um CDB de 100% do CDI.",
     sources: [SOURCES.poupanca, SOURCES.fgc],
+    learn: "selic-cdi",
   },
   cdb: {
     full: "Certificado de Depósito Bancário",
@@ -61,6 +63,7 @@ export const GUIDE: Record<ProductId, Guide> = {
     liquidity: "Depende do CDB: alguns deixam sacar a qualquer dia, outros só pagam no vencimento.",
     watch: "Banco menor costuma pagar mais porque o risco é maior; por isso vale ficar dentro do limite do FGC.",
     sources: [SOURCES.ir, SOURCES.fgc],
+    learn: "investir-e-emprestar",
   },
   lci: {
     full: "Letra de Crédito Imobiliário e Letra de Crédito do Agronegócio",
@@ -70,6 +73,7 @@ export const GUIDE: Record<ProductId, Guide> = {
     liquidity: "Tem carência: pela regra do Conselho Monetário Nacional, não dá pra resgatar antes de 6 meses (nas corrigidas pela inflação, o prazo mínimo é maior).",
     watch: "Paga um % do CDI menor que o CDB, mas sem IR. O quadro CDB × LCI do simulador mostra qual sai na frente no seu prazo.",
     sources: [SOURCES.ir, SOURCES.lciPrazo, SOURCES.fgc],
+    learn: "imposto-de-renda",
   },
   selic: {
     full: "Tesouro Selic (título público pós-fixado)",
@@ -79,6 +83,7 @@ export const GUIDE: Record<ProductId, Guide> = {
     liquidity: "Pode vender em qualquer dia útil; o dinheiro cai no mesmo dia ou no seguinte.",
     watch: "Taxa de custódia da B3 de 0,20% ao ano, só sobre o que passar de R$ 10 mil.",
     sources: [SOURCES.tesouro, SOURCES.ir],
+    learn: "selic-cdi",
   },
   ipca: {
     full: "Tesouro IPCA+ (título público atrelado à inflação)",
@@ -88,6 +93,7 @@ export const GUIDE: Record<ProductId, Guide> = {
     liquidity: "Dá pra vender antes, mas pelo preço do dia (marcação a mercado): pode sair com mais ou com menos do que o combinado.",
     watch: "Pensado para objetivos longos, de vários anos. Taxa de custódia da B3 de 0,20% ao ano.",
     sources: [SOURCES.tesouro, SOURCES.ir],
+    learn: "marcacao-a-mercado",
   },
   fundo: {
     full: "Fundo de renda fixa referenciado DI",
@@ -97,6 +103,7 @@ export const GUIDE: Record<ProductId, Guide> = {
     liquidity: "O resgate costuma cair no mesmo dia ou no seguinte (veja o prazo de resgate do fundo).",
     watch: "A taxa de administração é cobrada todo ano e sai do rendimento: compare antes de entrar.",
     sources: [SOURCES.fundos],
+    learn: "imposto-de-renda",
   },
   pre: {
     full: "Prefixado (Tesouro Prefixado ou CDB prefixado)",
@@ -106,5 +113,6 @@ export const GUIDE: Record<ProductId, Guide> = {
     liquidity: "Vender antes do vencimento sai pelo preço do dia e pode dar perda; a taxa combinada vale levando até o fim.",
     watch: "Sai ganhando se os juros do país caírem depois da compra; se subirem, você fica preso a uma taxa menor.",
     sources: [SOURCES.tesouro, SOURCES.fgc, SOURCES.ir],
+    learn: "marcacao-a-mercado",
   },
 };

@@ -11,7 +11,7 @@
 ![React](https://img.shields.io/badge/React_19-0a0d12?style=flat-square&logo=react&logoColor=61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-0a0d12?style=flat-square&logo=typescript&logoColor=3178c6)
 ![Recharts](https://img.shields.io/badge/Recharts-0a0d12?style=flat-square)
-![Vitest](https://img.shields.io/badge/23_testes-0a0d12?style=flat-square&logo=vitest&logoColor=3ddc97)
+![Vitest](https://img.shields.io/badge/25_testes-0a0d12?style=flat-square&logo=vitest&logoColor=3ddc97)
 
 **Poupança, CDB, LCI/LCA, Tesouro, fundo DI ou prefixado: quanto rende de verdade?**
 <br />
@@ -40,7 +40,7 @@ Ou diga a sua meta e veja quanto guardar por mês em cada um.
 - **CDB × LCI:** quanto o CDB precisa pagar para empatar com a LCI no seu prazo.
 - **Link da simulação.** Os valores ficam no endereço: é só copiar e mandar.
 - **Entenda os investimentos.** Um **?** em cada investimento explica o que ele é, quem garante e quando dá pra sacar, e uma seção para leigos explica juros compostos, Selic, CDI, IPCA, IR, liquidez, risco e FGC, com um exemplo nas taxas de hoje e o link da fonte oficial de cada regra (lei, Banco Central, FGC, Tesouro Direto, IBGE).
-- **Aprenda, animado** ([/aprenda](https://rende-mais.joaovaz.dev/aprenda)). Um tutorial em 7 capítulos narrado pelo Rendinho, uma moedinha que reage ao que você mexe: o carrinho que encolhe com o IPCA real desde o Plano Real, a bola de neve dos juros compostos, o que fazem o Banco Central e o Copom (com o efeito dominó da Selic), o termostato da Selic e do CDI, para quem você empresta e quem garante (FGC), o leão do IR com a tabela inteira e o IOF de quem tira antes de 30 dias, e a liquidez de cada investimento. No fim, "quem é quem" no seu dinheiro.
+- **Aprenda, animado** ([/aprenda](https://rende-mais.joaovaz.dev/aprenda)). Um tutorial em 11 capítulos, cada um com a sua página, narrado pelo Rendinho, uma moedinha que reage ao que você mexe: inflação, juros compostos, Banco Central e Copom, Selic e CDI, investir é emprestar (e o FGC), o leão do IR (com o IOF), liquidez, marcação a mercado, reserva de emergência, ações e FIIs, e golpes ("é golpe ou é normal?"). Barra de progresso com ✓ nos capítulos vistos, quiz final para compartilhar e imagem de compartilhamento própria para cada capítulo.
 
 <img src="docs/grafico.png" alt="Gráfico de quanto cada investimento já rendeu, mês a mês" width="100%" />
 
@@ -67,7 +67,7 @@ Ou diga a sua meta e veja quanto guardar por mês em cada um.
 npm test
 ```
 
-23 testes cobrem a tabela do IR, as duas regras da poupança, o CDB com IR, a isenção da LCI, a custódia do Tesouro, o Tesouro IPCA+, o come-cotas do fundo DI mordida por mordida, o IR de cada aporte pela própria idade, o ganho real, a equivalência CDB × LCI, a busca do aporte da meta, no centavo, e as contas do tutorial (inflação acumulada, juros simples × compostos, tempo para dobrar, FGC, IOF e liquidez).
+25 testes cobrem a tabela do IR, as duas regras da poupança, o CDB com IR, a isenção da LCI, a custódia do Tesouro, o Tesouro IPCA+, o come-cotas do fundo DI mordida por mordida, o IR de cada aporte pela própria idade, o ganho real, a equivalência CDB × LCI, a busca do aporte da meta, no centavo, e as contas do tutorial (inflação acumulada, juros simples × compostos, tempo para dobrar, FGC, IOF, liquidez, marcação a mercado e reserva de emergência).
 
 ## 🚀 Rodar localmente
 
@@ -85,11 +85,11 @@ Abra http://localhost:3000. Se a API do Banco Central não responder, o app usa 
 ```
 src/
 ├── app/page.tsx         # lê as taxas (em cache por hora) e monta a página
-├── app/aprenda/         # tutorial animado: inflação e juros compostos
+├── app/aprenda/         # tutorial: índice, um capítulo por página e o quiz
 ├── components/
 │   ├── simulator.tsx    # formulário, vencedor, ranking e dicas
 │   ├── learn.tsx        # "Entenda os investimentos" (feita no servidor)
-│   ├── lessons/         # cenas animadas do tutorial, uma por capítulo
+│   ├── lessons/         # cenas animadas do tutorial, barra de capítulos e quiz
 │   ├── mascot.tsx       # o Rendinho, mascote do tutorial (SVG)
 │   └── chart.tsx        # gráfico com Recharts
 └── lib/

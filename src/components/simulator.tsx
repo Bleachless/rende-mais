@@ -154,9 +154,14 @@ function HelpText({ id }: { id: ProductId }) {
       <p>
         <span className="text-dim">Resgate:</span> {g.liquidity}
       </p>
-      <a href={`#entenda-${id}`} className="inline-block text-up underline-offset-4 hover:underline">
-        Saiba mais e fontes ↓
-      </a>
+      <span className="flex flex-wrap gap-x-4 gap-y-1">
+        <a href={`#entenda-${id}`} className="text-up underline-offset-4 hover:underline">
+          Saiba mais e fontes ↓
+        </a>
+        <Link href={`/aprenda/${g.learn}`} className="text-up underline-offset-4 hover:underline">
+          Ver no tutorial →
+        </Link>
+      </span>
     </div>
   );
 }
@@ -477,6 +482,9 @@ function Calc({ rates, start, syncUrl }: { rates: Rates; start: Start; syncUrl: 
                 ))}
               </ul>
               <p className="mt-2 text-xs text-dim">Cada aporte conta o próprio prazo: o dinheiro mais novo paga mais IR.</p>
+              <Link href="/aprenda/imposto-de-renda" className="mt-2 inline-block text-xs text-up underline-offset-4 hover:underline">
+                Pra que serve essa tabela? E o IOF? →
+              </Link>
             </div>
           </div>
         </div>

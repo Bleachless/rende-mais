@@ -26,11 +26,16 @@ export function Sources({ items }: { items: Source[] }) {
   );
 }
 
-function Concept({ title, sources, children }: { title: string; sources?: Source[]; children: ReactNode }) {
+function Concept({ title, sources, more, children }: { title: string; sources?: Source[]; more?: string; children: ReactNode }) {
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-panel p-5">
       <h3 className="font-semibold">{title}</h3>
       <div className="mt-2 space-y-2 text-sm leading-relaxed text-muted">{children}</div>
+      {more && (
+        <Link href={`/aprenda/${more}`} className="mt-3 text-sm text-up underline-offset-4 hover:underline">
+          Ver animado no tutorial →
+        </Link>
+      )}
       {sources && <Sources items={sources} />}
     </div>
   );
@@ -105,7 +110,7 @@ export function Learn({ rates }: { rates: Rates }) {
         Tesouro Direto, IBGE) para você conferir.
       </p>
       <Link href="/aprenda" className="mt-3 inline-block text-sm text-up underline-offset-4 hover:underline">
-        Prefere ver acontecer? Tutorial animado: inflação, juros, Banco Central, Selic, IR e liquidez →
+        Prefere ver acontecer? Tutorial animado em 11 capítulos, com quiz no fim →
       </Link>
       <p className="mt-4 max-w-3xl rounded-xl border border-amber/40 bg-amber/10 px-4 py-3 text-sm leading-relaxed text-amber">
         Conteúdo educativo e geral: não é recomendação de investimento. Cada pessoa tem objetivos, prazos e riscos diferentes. Antes de aplicar, leia as condições do
@@ -113,19 +118,19 @@ export function Learn({ rates }: { rates: Rates }) {
       </p>
 
       <div className="mt-8 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <Concept title="O que é investir">
+        <Concept title="O que é investir" more="investir-e-emprestar">
           <p>
             É emprestar o seu dinheiro para alguém (um banco, o governo, uma empresa) que paga juros por isso. Na renda fixa, que é o que este simulador compara, a
             regra do pagamento é combinada antes: um percentual do CDI, a inflação mais uma taxa ou uma taxa fixa.
           </p>
         </Concept>
-        <Concept title="Juros compostos">
+        <Concept title="Juros compostos" more="juros-compostos">
           <p>
             É juro sobre juro: o rendimento de cada mês entra na conta e passa a render também. Por isso o tempo pesa tanto: quanto mais tempo aplicado, mais rápido
             a bola de neve cresce.
           </p>
         </Concept>
-        <Concept title="Selic, CDI e IPCA" sources={[SOURCES.selic, SOURCES.cdi, SOURCES.ipca]}>
+        <Concept title="Selic, CDI e IPCA" more="selic-cdi" sources={[SOURCES.selic, SOURCES.cdi, SOURCES.ipca]}>
           <dl className="space-y-2">
             <div>
               <dt className="inline font-medium text-text">Selic ({pct(rates.selic)}):</dt>{" "}
@@ -143,7 +148,7 @@ export function Learn({ rates }: { rates: Rates }) {
             </div>
           </dl>
         </Concept>
-        <Concept title="Imposto de renda" sources={[SOURCES.ir, SOURCES.iof]}>
+        <Concept title="Imposto de renda" more="imposto-de-renda" sources={[SOURCES.ir, SOURCES.iof]}>
           <p>
             Na maior parte da renda fixa, o IR é cobrado no resgate e só sobre o rendimento, nunca sobre o que você colocou. E ele cai com o tempo:{" "}
             <span className="num text-text">22,5%</span> até 6 meses, <span className="num text-text">20%</span> até 1 ano,{" "}
@@ -152,13 +157,13 @@ export function Learn({ rates }: { rates: Rates }) {
           <p>Poupança e LCI/LCA são isentas para pessoa física.</p>
           <p>E antes de 30 dias ainda tem IOF: colocou hoje e tirou amanhã, ele leva 96% do rendimento (e o IR, 22,5% do que sobrar).</p>
         </Concept>
-        <Concept title="Liquidez × prazo">
+        <Concept title="Liquidez × prazo" more="liquidez">
           <p>
             Liquidez é a facilidade de transformar o investimento em dinheiro sem perder nada. Quem aceita deixar o dinheiro preso por mais tempo costuma ganhar uma
             taxa maior. Dinheiro para emergências pede saque rápido; objetivos de anos aceitam prazos longos.
           </p>
         </Concept>
-        <Concept title="Risco e FGC" sources={[SOURCES.fgc]}>
+        <Concept title="Risco e FGC" more="investir-e-emprestar" sources={[SOURCES.fgc]}>
           <p>
             Todo investimento tem risco: de quem pegou o dinheiro não pagar, de o preço oscilar se você vender antes do vencimento e de não conseguir sacar na hora.
           </p>
@@ -206,6 +211,9 @@ export function Learn({ rates }: { rates: Rates }) {
                   </div>
                 ))}
               </dl>
+              <Link href={`/aprenda/${g.learn}`} className="mt-3 text-sm text-up underline-offset-4 hover:underline">
+                Ver no tutorial →
+              </Link>
               <Sources items={g.sources} />
             </article>
           );

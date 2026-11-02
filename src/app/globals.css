@@ -99,9 +99,16 @@ input[type="range"] {
 .lend-go { animation: lend 2s ease-in-out infinite; }
 .lend-back { animation: lend 2s ease-in-out 1s infinite reverse; }
 
+/* Linha que se desenha (ações e FIIs). */
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+.draw-line { stroke-dasharray: 1000; animation: draw-line 1.4s ease-out both; }
+
 @media (prefers-reduced-motion: reduce) {
   .anim-ticker, .anim-rise, .mascot-bob, .mascot-eye, .mascot-wave, .mascot-pop, .mascot-shake { animation: none; }
-  .lend-go, .lend-back { animation: none; }
+  .lend-go, .lend-back, .draw-line { animation: none; }
   .lend-back { right: 0; }
 }
 

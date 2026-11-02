@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { access, compound, iofRate, doublingYears, fgcSplit, grossGain, inflationSince, lastMonth, priceIndex, simple, type IpcaHistory } from "./lessons";
+import { access, compound, iofRate, monthsToSave, titlePrice, doublingYears, fgcSplit, grossGain, inflationSince, lastMonth, priceIndex, simple, type IpcaHistory } from "./lessons";
 
 const h: IpcaHistory = { start: 2020, monthly: [...Array(12).fill(1), ...Array(12).fill(0), 0.5, 0.5] };
 const close = (a: number, b: number, tol = 1e-9) => expect(Math.abs(a - b)).toBeLessThan(tol);
@@ -59,5 +59,19 @@ describe("IOF", () => {
     expect(iofRate(29)).toBe(0.03);
     expect(iofRate(30)).toBe(0);
     expect(iofRate(400)).toBe(0);
+  });
+});
+
+describe("marcação a mercado e reserva", () => {
+  it("o preço do título cai quando os juros sobem", () => {
+    close(titlePrice(1000, 10, 1), 1000 / 1.1);
+    expect(titlePrice(1000, 14, 4)).toBeLessThan(titlePrice(1000, 12, 4));
+    expect(titlePrice(1000, 12, 0)).toBe(1000);
+  });
+  it("conta os meses para juntar a reserva", () => {
+    expect(monthsToSave(1000, 100, 0)).toBe(10);
+    expect(monthsToSave(1000, 100, 12)).toBeLessThanOrEqual(10);
+    expect(monthsToSave(1000, 0, 12)).toBe(Infinity);
+    expect(monthsToSave(0, 100, 12)).toBe(0);
   });
 });

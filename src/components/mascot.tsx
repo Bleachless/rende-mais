@@ -17,7 +17,9 @@ const ARMS: Record<Arms, [string, string]> = {
   push: ["M24 80 Q38 92 52 88", "M98 72 Q112 76 122 70"],
 };
 
-function Eyes({ face }: { face: Face }) {
+// Função comum (e não componente): o gerador das imagens de compartilhamento só aceita
+// elementos de SVG diretos dentro do <svg>.
+function eyes(face: Face) {
   if (face === "shocked") {
     return (
       <g>
@@ -63,12 +65,13 @@ const MOUTH: Record<Face, ReactNode> = {
   ),
 };
 
-export function Mascot({ face = "happy", arms = "down", className = "" }: { face?: Face; arms?: Arms; className?: string }) {
+// `size` (em px) é para quando não há CSS, como nas imagens de compartilhamento.
+export function Mascot({ face = "happy", arms = "down", className = "", size }: { face?: Face; arms?: Arms; className?: string; size?: number }) {
   const [left, right] = ARMS[arms];
   const blush = face === "happy" || face === "cheer";
   const sweat = face === "worried" || face === "shocked";
   return (
-    <svg viewBox="-4 0 132 140" className={`overflow-visible ${className}`} aria-hidden>
+    <svg viewBox="-4 0 132 140" className={`overflow-visible ${className}`} width={size} height={size && Math.round((size * 140) / 132)} aria-hidden>
       <g className="mascot-bob">
         {/* Remonta a cada troca de cara: dá o "pulo" (e a tremida, se for susto). */}
         <g key={face} className={face === "shocked" ? "mascot-shake" : "mascot-pop"}>
@@ -85,12 +88,12 @@ export function Mascot({ face = "happy", arms = "down", className = "" }: { face
           <path d="M32 44 Q40 30 56 26" fill="none" stroke="#fff" strokeOpacity="0.55" strokeWidth="4" strokeLinecap="round" />
           {/* rosto */}
           {BROWS[face] && <path d={BROWS[face]} fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />}
-          <Eyes face={face} />
+          {eyes(face)}
           {blush && (
-            <>
+            <g>
               <circle cx={38} cy={71} r={5} fill="#ff6b9a" fillOpacity="0.4" />
               <circle cx={82} cy={71} r={5} fill="#ff6b9a" fillOpacity="0.4" />
-            </>
+            </g>
           )}
           {MOUTH[face]}
           {sweat && <path d="M100 34 Q95 43 100 46 Q105 43 100 34 Z" fill="#5aa9ff" />}
