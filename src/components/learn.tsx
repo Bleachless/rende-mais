@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { brl, DEFAULTS, irRate, pct, periodLabel, products, simulate, type ProductId, type Rates } from "@/lib/calc";
 import { COLOR } from "@/lib/colors";
@@ -9,7 +10,7 @@ import { GUIDE, SOURCES, type Source } from "@/lib/guide";
 const ORDER: ProductId[] = ["poupanca", "cdb", "lci", "selic", "ipca", "fundo", "pre"];
 
 // Links para a fonte oficial: quem lê pode conferir na lei, no Banco Central, no FGC...
-function Sources({ items }: { items: Source[] }) {
+export function Sources({ items }: { items: Source[] }) {
   return (
     <p className="mt-auto pt-4 text-xs leading-relaxed text-dim">
       Fonte{items.length > 1 ? "s" : ""}:{" "}
@@ -103,6 +104,9 @@ export function Learn({ rates }: { rates: Rates }) {
         O básico para entender o que o simulador está comparando, em poucas linhas cada. Cada explicação traz o link da fonte oficial (lei, Banco Central, FGC,
         Tesouro Direto, IBGE) para você conferir.
       </p>
+      <Link href="/aprenda" className="mt-3 inline-block text-sm text-up underline-offset-4 hover:underline">
+        Prefere ver acontecer? Tutorial animado de inflação e juros compostos →
+      </Link>
       <p className="mt-4 max-w-3xl rounded-xl border border-amber/40 bg-amber/10 px-4 py-3 text-sm leading-relaxed text-amber">
         Conteúdo educativo e geral: não é recomendação de investimento. Cada pessoa tem objetivos, prazos e riscos diferentes. Antes de aplicar, leia as condições do
         produto e, se precisar, procure um profissional certificado.

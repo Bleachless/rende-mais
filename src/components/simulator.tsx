@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { brl, cdbEquivalent, DEFAULTS, irRate, monthlyFor, pct, periodLabel, products, simulate, simulateAll, type Inputs, type ProductId, type Rates, type Result } from "@/lib/calc";
 import { COLOR } from "@/lib/colors";
 import { GUIDE } from "@/lib/guide";
 import { GrowthChart } from "./chart";
+import { SiteHeader } from "./site";
 
 type Mode = "simular" | "meta";
 const DEFAULT_GOAL = 50_000;
@@ -64,21 +66,6 @@ const useHydrated = () =>
     () => true,
     () => false,
   );
-
-function Logo() {
-  return (
-    <span className="flex items-center gap-2.5">
-      <svg viewBox="0 0 32 32" className="h-8 w-8" aria-hidden>
-        <rect width="32" height="32" rx="9" fill="#10151c" stroke="#222b37" />
-        <path d="M7 22l6-6 4 4 8-9" fill="none" stroke="#3ddc97" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M20 11h5v5" fill="none" stroke="#3ddc97" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <span className="text-lg font-semibold tracking-tight">
-        rende<span className="text-up">mais</span>
-      </span>
-    </span>
-  );
-}
 
 function Ticker({ rates }: { rates: Rates }) {
   const items = [
@@ -503,17 +490,17 @@ export function Simulator({ rates, children }: { rates: Rates; children?: ReactN
   const hydrated = useHydrated();
   return (
     <>
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-        <Logo />
-        <nav className="flex items-center gap-4 text-sm">
-          <a href="#entenda" className="text-muted hover:text-text">
-            entenda ↓
-          </a>
-          <a href="https://github.com/Bleachless/rende-mais" target="_blank" rel="noreferrer" className="text-muted hover:text-text">
-            código aberto ↗
-          </a>
-        </nav>
-      </header>
+      <SiteHeader>
+        <Link href="/aprenda" className="text-muted hover:text-text">
+          aprenda
+        </Link>
+        <a href="#entenda" className="hidden text-muted hover:text-text sm:inline">
+          entenda ↓
+        </a>
+        <a href="https://github.com/Bleachless/rende-mais" target="_blank" rel="noreferrer" className="text-muted hover:text-text">
+          código aberto ↗
+        </a>
+      </SiteHeader>
       <Ticker rates={rates} />
       <main>
         <section className="mx-auto max-w-6xl px-4 pt-12 sm:px-6">

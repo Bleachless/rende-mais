@@ -1,5 +1,7 @@
 import { cacheLife } from "next/cache";
 import type { Rates } from "./calc";
+import { IPCA_FALLBACK, IPCA_FALLBACK_START } from "./ipca-history";
+import type { IpcaHistory } from "./lessons";
 
 // Séries do SGS (Sistema Gerenciador de Séries Temporais) do Banco Central.
 const SERIES = { selic: 432, selicEfetiva: 1178, cdi: 4389, tr: 226, ipca12: 13522 } as const;
@@ -42,4 +44,29 @@ export async function getRates(): Promise<Rates> {
     updated: got.cdi?.data ?? FALLBACK.updated,
     live,
   };
+}
+
+// IPCA mês a mês desde 1995 (série 433), para o tutorial. Muda uma vez por mês: cache de um dia.
+export async function getIpcaHistory(): Promise<IpcaHistory> {
+  "use cache";
+  cacheLife("days");
+
+  const fallback = { start: IPCA_FALLBACK_START, monthly: IPCA_FALLBACK };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json&dataInicial=01/01/${IPCA_FALLBACK_START}`, {
+        headers: { Accept: "application/json", "User-Agent": "rende-mais" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) continue;
+      const rows = (await res.json()) as { data: string; valor: string }[];
+      // Só vale se vier completa e em sequência (a API às vezes devolve um pedaço).
+      const ok = rows.length >= IPCA_FALLBACK.length && rows.every((r, k) => r.data === `01/${String((k % 12) + 1).padStart(2, "0")}/${IPCA_FALLBACK_START + Math.floor(k / 12)}`);
+      const monthly = rows.map((r) => Number(r.valor));
+      if (ok && monthly.every(Number.isFinite)) return { start: IPCA_FALLBACK_START, monthly };
+    } catch {
+      // tenta de novo
+    }
+  }
+  return fallback;
 }

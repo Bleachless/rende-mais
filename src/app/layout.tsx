@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Sora } from "next/font/google";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const sora = Sora({ variable: "--font-sora", subsets: ["latin"] });
 const plex = IBM_Plex_Mono({ variable: "--font-plex", subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: "Rende Mais · CDB, LCI, Tesouro ou poupança: quanto rende de verdade",
   description:
     "Compare poupança, CDB, LCI/LCA, Tesouro Selic, Tesouro IPCA+, fundo DI e prefixado com as taxas de hoje do Banco Central, já com IR, come-cotas, custódia e inflação. Ou veja quanto guardar por mês para bater a sua meta e entenda, sem economês, o que é cada um.",
