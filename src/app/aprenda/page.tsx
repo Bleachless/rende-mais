@@ -6,6 +6,7 @@ import { SOURCES, type Source } from "@/lib/guide";
 import { getIpcaHistory, getRates } from "@/lib/rates";
 import { Sources } from "@/components/learn";
 import { InflationScene, SnowballScene } from "@/components/lessons";
+import { Bubble, Mascot } from "@/components/mascot";
 import { SiteHeader } from "@/components/site";
 
 export const metadata: Metadata = {
@@ -70,24 +71,33 @@ export default async function Page() {
         </a>
       </SiteHeader>
       <main>
-        <section className="mx-auto max-w-6xl px-4 pt-12 sm:px-6">
-          <p className="num text-xs uppercase tracking-[0.25em] text-up">Aprenda em poucos minutos</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-            Dinheiro parado encolhe.{" "}
-            <span className="bg-gradient-to-r from-up via-blue to-violet bg-clip-text text-transparent">Investido, cresce.</span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted">
-            Um tutorial em capítulos curtos, com os números reais do IBGE e do Banco Central. Arraste, mexa e veja acontecer.
-          </p>
-          <nav aria-label="Capítulos" className="mt-8 flex flex-wrap items-center gap-2 text-sm">
-            {CHAPTERS.map((c, k) => (
-              <a key={c.id} href={`#${c.id}`} className="flex items-center gap-2 rounded-xl border border-line bg-panel px-3 py-2 transition hover:border-up">
-                <span className="num text-xs text-up">{String(k + 1).padStart(2, "0")}</span>
-                {c.title}
-              </a>
-            ))}
-            <span className="px-1 text-xs text-dim">em breve: {NEXT.join(" · ")}</span>
-          </nav>
+        <section className="mx-auto grid max-w-6xl items-center gap-8 px-4 pt-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="min-w-0">
+            <p className="num text-xs uppercase tracking-[0.25em] text-up">Aprenda em poucos minutos</p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+              Dinheiro parado encolhe.{" "}
+              <span className="bg-gradient-to-r from-up via-blue to-violet bg-clip-text text-transparent">Investido, cresce.</span>
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg text-muted">
+              Um tutorial em capítulos curtos, com os números reais do IBGE e do Banco Central. Arraste, mexa e veja acontecer.
+            </p>
+            <nav aria-label="Capítulos" className="mt-8 flex flex-wrap items-center gap-2 text-sm">
+              {CHAPTERS.map((c, k) => (
+                <a key={c.id} href={`#${c.id}`} className="flex items-center gap-2 rounded-xl border border-line bg-panel px-3 py-2 transition hover:border-up">
+                  <span className="num text-xs text-up">{String(k + 1).padStart(2, "0")}</span>
+                  {c.title}
+                </a>
+              ))}
+              <span className="px-1 text-xs text-dim">em breve: {NEXT.join(" · ")}</span>
+            </nav>
+          </div>
+          <div className="flex items-center gap-4 lg:flex-col lg:items-start">
+            <Mascot face="happy" arms="wave" className="h-28 w-24 shrink-0 lg:h-44 lg:w-36" />
+            <Bubble className="min-w-0 flex-1" tail="lg:hidden">
+              Oi! Eu sou o <b className="text-up">Rendinho</b>. Vou te mostrar, com números de verdade, o que acontece com o dinheiro parado e com o
+              dinheiro investido. Mexe nas coisas aí embaixo comigo!
+            </Bubble>
+          </div>
         </section>
 
         <Chapter
@@ -134,18 +144,21 @@ export default async function Page() {
         </Chapter>
 
         <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6">
-          <div className="rounded-2xl border border-line bg-panel p-6 sm:p-8">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Agora é com você</h2>
-            <p className="mt-3 max-w-2xl text-muted">
-              Veja quanto o seu dinheiro rende de verdade em cada investimento, já com IR, inflação e as taxas de hoje.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="/" className="rounded-xl bg-up px-4 py-2.5 text-sm font-semibold text-bg transition hover:brightness-110">
-                Abrir o simulador →
-              </Link>
-              <Link href="/#entenda" className="rounded-xl border border-line px-4 py-2.5 text-sm font-medium transition hover:border-up">
-                O que é cada investimento
-              </Link>
+          <div className="flex flex-col gap-6 rounded-2xl border border-line bg-panel p-6 sm:flex-row sm:items-center sm:p-8">
+            <Mascot face="cheer" arms="up" className="h-28 w-24 shrink-0 sm:order-last sm:ml-auto sm:h-36 sm:w-32" />
+            <div className="min-w-0">
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Agora é com você</h2>
+              <p className="mt-3 max-w-2xl text-muted">
+                Veja quanto o seu dinheiro rende de verdade em cada investimento, já com IR, inflação e as taxas de hoje.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link href="/" className="rounded-xl bg-up px-4 py-2.5 text-sm font-semibold text-bg transition hover:brightness-110">
+                  Abrir o simulador →
+                </Link>
+                <Link href="/#entenda" className="rounded-xl border border-line px-4 py-2.5 text-sm font-medium transition hover:border-up">
+                  O que é cada investimento
+                </Link>
+              </div>
             </div>
           </div>
         </section>

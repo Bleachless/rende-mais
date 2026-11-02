@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { brl, pct } from "@/lib/calc";
+import { Bubble, Mascot, type Arms, type Face } from "./mascot";
 import { compound, doublingYears, inflationSince, lastMonth, priceIndex, simple, type IpcaHistory } from "@/lib/lessons";
 
 const MONTHS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
@@ -86,8 +87,35 @@ export function InflationScene({ ipca }: { ipca: IpcaHistory }) {
   const since = idx.slice(k0).map((v, k) => `${x(k0 + k).toFixed(1)},${y(v).toFixed(1)}`);
   const area = `M${x(k0).toFixed(1)},100L${since.join("L")}L300,100Z`;
 
+  // O Rendinho encolhe junto com o poder de compra, e a cara acompanha o tamanho do estrago.
+  const lost = 1 - 1 / f;
+  const rise = pct((f - 1) * 100, 1);
+  const face: Face = lost < 0.1 ? "happy" : lost < 0.4 ? "worried" : "shocked";
+  const arms: Arms = face === "shocked" ? "cheeks" : "down";
+  const say =
+    face === "happy"
+      ? `Desde ${year}, os preços subiram ${rise}. Ainda dou conta de quase o carrinho todo!`
+      : face === "worried"
+        ? `Desde ${year}, os preços subiram ${rise}. Tá vendo? Eu encolhi: R$ 100 hoje compram só o que ${brl(100 / f)} compravam.`
+        : `Socorro! Desde ${year}, os preços subiram ${rise}. Parado, eu só compro o que ${brl(100 / f)} compravam. É assim que dinheiro parado perde valor.`;
+
   return (
     <div ref={ref} className="grid gap-6 rounded-2xl border border-line bg-panel p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="flex items-center gap-4 lg:col-span-2">
+        <div className="relative h-28 w-24 shrink-0 lg:h-40 lg:w-36">
+          {/* Contorno do tamanho que ele tinha no ano escolhido. */}
+          <svg viewBox="-4 0 132 140" className="absolute inset-0 h-full w-full" aria-hidden>
+            <circle cx={60} cy={64} r={42} fill="none" stroke="#5b6678" strokeWidth="2" strokeDasharray="5 5" />
+          </svg>
+          <div
+            className="h-full w-full origin-[48%_46%] transition-transform duration-500 motion-reduce:transition-none"
+            style={{ transform: `scale(${Math.max(0.5, 1 / f).toFixed(3)})` }}
+          >
+            <Mascot face={face} arms={arms} className="h-full w-full" />
+          </div>
+        </div>
+        <Bubble className="min-w-0 flex-1">{say}</Bubble>
+      </div>
       <div className="min-w-0">
         <p className="text-sm text-muted">O que R$ 100 compravam em janeiro de</p>
         <p className="num mt-1 text-5xl font-semibold tracking-tight text-amber">{year}</p>
@@ -179,6 +207,17 @@ export function SnowballScene({ cdi, poupanca }: { cdi: number; poupanca: number
   const c = compound(PRINCIPAL, rate, years);
   // Arredondado para o HTML do servidor e o do navegador baterem.
   const share = (v: number) => `${((v / c) * 100).toFixed(3)}%`;
+  // A bola de neve do Rendinho, na mesma escala para as duas taxas (o teto é a maior em 30 anos).
+  const ball = Math.round(24 + 96 * Math.sqrt(c / compound(PRINCIPAL, Math.max(cdi, poupanca), 30)));
+  const extra = brl(c - s, 0);
+  const face: Face = years <= 3 ? "neutral" : years <= 12 ? "happy" : "cheer";
+  const say =
+    (face === "neutral"
+      ? `Em ${years} ${years === 1 ? "ano" : "anos"}, juros simples e compostos quase empatam: os juros sobre juros são só ${extra}. Paciência, a bola de neve começa pequena.`
+      : face === "happy"
+        ? `Tá vendo o verde? São os juros sobre juros: já somam ${extra}. A bola tá pegando embalo!`
+        : `Agora é avalanche! Em ${years} anos, só os juros sobre juros já somam ${extra}.`) +
+    (pick === "poup" ? " Na poupança ela cresce mais devagar: troca pro CDI e compara." : "");
   const bars = Array.from({ length: years }, (_, k) => {
     const n = k + 1;
     const sn = simple(PRINCIPAL, rate, n);
@@ -187,6 +226,19 @@ export function SnowballScene({ cdi, poupanca }: { cdi: number; poupanca: number
 
   return (
     <div ref={ref} className="rounded-2xl border border-line bg-panel p-5 sm:p-6">
+      <div className="mb-5 flex flex-wrap items-end gap-x-4 gap-y-3">
+        <div className="flex h-32 items-end">
+          <Mascot face={face} arms="push" className="h-24 w-20 shrink-0 sm:h-28 sm:w-24" />
+          <div
+            className="mb-1 shrink-0 rounded-full shadow-[inset_-6px_-8px_0_rgba(0,0,0,0.12)] transition-all duration-300 motion-reduce:transition-none"
+            style={{ width: ball, height: ball, background: "radial-gradient(circle at 35% 30%, #ffffff, #d5e0ee 55%, #8fa3bd)" }}
+            aria-hidden
+          />
+        </div>
+        <Bubble className="min-w-0 basis-full sm:mb-8 sm:basis-0 sm:flex-1" tail="hidden sm:block">
+          {say}
+        </Bubble>
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="grid grid-cols-2 rounded-xl border border-line bg-bg p-1 text-sm" role="radiogroup" aria-label="Taxa">
           {options.map((o) => (

@@ -40,7 +40,7 @@ Ou diga a sua meta e veja quanto guardar por mês em cada um.
 - **CDB × LCI:** quanto o CDB precisa pagar para empatar com a LCI no seu prazo.
 - **Link da simulação.** Os valores ficam no endereço: é só copiar e mandar.
 - **Entenda os investimentos.** Um **?** em cada investimento explica o que ele é, quem garante e quando dá pra sacar, e uma seção para leigos explica juros compostos, Selic, CDI, IPCA, IR, liquidez, risco e FGC, com um exemplo nas taxas de hoje e o link da fonte oficial de cada regra (lei, Banco Central, FGC, Tesouro Direto, IBGE).
-- **Aprenda, animado** ([/aprenda](https://rende-mais.joaovaz.dev/aprenda)). Um tutorial em capítulos que se mexem quando aparecem na tela: o carrinho que encolhe com o IPCA real desde o Plano Real e a bola de neve dos juros compostos com o CDI de hoje.
+- **Aprenda, animado** ([/aprenda](https://rende-mais.joaovaz.dev/aprenda)). Um tutorial narrado pelo Rendinho, uma moedinha que reage ao que você mexe, em capítulos que se mexem quando aparecem na tela: o carrinho que encolhe com o IPCA real desde o Plano Real e a bola de neve dos juros compostos com o CDI de hoje.
 
 <img src="docs/grafico.png" alt="Gráfico de quanto cada investimento já rendeu, mês a mês" width="100%" />
 
@@ -90,6 +90,7 @@ src/
 │   ├── simulator.tsx    # formulário, vencedor, ranking e dicas
 │   ├── learn.tsx        # "Entenda os investimentos" (feita no servidor)
 │   ├── lessons.tsx      # cenas animadas do tutorial
+│   ├── mascot.tsx       # o Rendinho, mascote do tutorial (SVG)
 │   └── chart.tsx        # gráfico com Recharts
 └── lib/
     ├── rates.ts         # séries do Banco Central (SGS)
