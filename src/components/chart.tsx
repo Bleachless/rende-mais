@@ -2,16 +2,7 @@
 
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { brl, periodLabel, type ProductId, type Result } from "@/lib/calc";
-
-export const COLOR: Record<ProductId, string> = {
-  poupanca: "#ffb547",
-  cdb: "#5aa9ff",
-  lci: "#3ddc97",
-  selic: "#a78bfa",
-  ipca: "#fb923c",
-  fundo: "#22d3ee",
-  pre: "#ff6b9a",
-};
+import { COLOR } from "@/lib/colors";
 
 export const NAME: Record<ProductId, string> = {
   poupanca: "Poupança",

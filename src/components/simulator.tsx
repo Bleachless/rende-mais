@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
-import { brl, cdbEquivalent, irRate, monthlyFor, pct, periodLabel, products, simulate, simulateAll, type Inputs, type ProductId, type Rates, type Result } from "@/lib/calc";
-import { COLOR, GrowthChart } from "./chart";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { brl, cdbEquivalent, DEFAULTS, irRate, monthlyFor, pct, periodLabel, products, simulate, simulateAll, type Inputs, type ProductId, type Rates, type Result } from "@/lib/calc";
+import { COLOR } from "@/lib/colors";
+import { GUIDE } from "@/lib/guide";
+import { GrowthChart } from "./chart";
 
 type Mode = "simular" | "meta";
-const DEFAULTS: Inputs = { initial: 10_000, monthly: 500, months: 24, cdbPct: 100, lciPct: 90, prefixado: 14, ipcaReal: 7, fundoPct: 100, fundoFee: 0.5 };
 const DEFAULT_GOAL = 50_000;
 const PERIODS = [6, 12, 24, 36, 60, 120];
 const PARAMS: Record<keyof Inputs, string> = {
@@ -138,10 +139,47 @@ function PctField({ label, value, onChange, suffix, step = 0.5 }: { label: strin
   );
 }
 
+// "O que é isso?" de cada investimento, aberto dentro do próprio cartão.
+function HelpButton({ id, name, open, onToggle }: { id: ProductId; name: string; open: boolean; onToggle: (id: ProductId) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(id)}
+      aria-expanded={open}
+      aria-controls={`ajuda-${id}`}
+      aria-label={`O que é ${name}?`}
+      title={`O que é ${name}?`}
+      className={`num grid h-6 w-6 shrink-0 place-items-center rounded-full border text-xs transition ${open ? "border-up bg-up/10 text-up" : "border-line text-muted hover:border-up hover:text-text"}`}
+    >
+      ?
+    </button>
+  );
+}
+
+function HelpText({ id }: { id: ProductId }) {
+  const g = GUIDE[id];
+  return (
+    <div id={`ajuda-${id}`} className="anim-rise mt-3 space-y-1.5 rounded-xl border border-line bg-bg/60 p-3 text-xs leading-relaxed text-muted">
+      <p className="text-text">{g.what}</p>
+      <p>
+        <span className="text-dim">Garantia:</span> {g.safety}
+      </p>
+      <p>
+        <span className="text-dim">Resgate:</span> {g.liquidity}
+      </p>
+      <a href={`#entenda-${id}`} className="inline-block text-up underline-offset-4 hover:underline">
+        Saiba mais e fontes ↓
+      </a>
+    </div>
+  );
+}
+
+type Help = { help: ProductId | null; onHelp: (id: ProductId) => void };
+
 type Plan = { need: number | null; result: Result };
 
 // Modo meta: quanto guardar por mês em cada investimento para juntar o valor no prazo.
-function Goal({ plans, goal, i }: { plans: Plan[]; goal: number; i: Inputs }) {
+function Goal({ plans, goal, i, help, onHelp }: { plans: Plan[]; goal: number; i: Inputs } & Help) {
   const ok = plans.filter((x) => x.need !== null).sort((a, b) => a.need! - b.need!);
   const best = ok[0];
   const poup = plans.find((x) => x.result.product.id === "poupanca");
@@ -188,8 +226,10 @@ function Goal({ plans, goal, i }: { plans: Plan[]; goal: number; i: Inputs }) {
               <p className="flex items-center gap-2 font-semibold">
                 <span className="num text-xs text-dim">{k + 1}º</span>
                 {r.product.name}
+                <HelpButton id={r.product.id} name={r.product.name} open={help === r.product.id} onToggle={onHelp} />
               </p>
               <p className="text-xs text-muted">{r.product.detail}</p>
+              {help === r.product.id && <HelpText id={r.product.id} />}
               <p className="num mt-4 text-2xl font-medium">
                 {need === null ? "—" : brl(need)}
                 <span className="text-sm text-muted"> /mês</span>
@@ -218,12 +258,14 @@ function Calc({ rates, start, syncUrl }: { rates: Rates; start: Start; syncUrl: 
   const [goal, setGoal] = useState(start.goal);
   const [hidden, setHidden] = useState<Set<ProductId>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [help, setHelp] = useState<ProductId | null>(null);
+  const toggleHelp = (id: ProductId) => setHelp((h) => (h === id ? null : id));
   const set = (patch: Partial<Inputs>) => setI((x) => ({ ...x, ...patch }));
 
   // A simulação fica no endereço, para dar pra mandar o link. A primeira pintura (antes de ler o
   // endereço) não escreve nada, senão apagaria os parâmetros de quem abriu um link.
   useEffect(() => {
-    if (syncUrl) history.replaceState(null, "", `${location.pathname}${toSearch(i, mode, goal)}`);
+    if (syncUrl) history.replaceState(null, "", `${location.pathname}${toSearch(i, mode, goal)}${location.hash}`);
   }, [i, mode, goal, syncUrl]);
 
   // No modo meta, cada investimento é simulado com o aporte que ele precisa para chegar lá.
@@ -245,7 +287,7 @@ function Calc({ rates, start, syncUrl }: { rates: Rates; start: Start; syncUrl: 
 
   return (
     <>
-      <section className="mx-auto mt-10 grid max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
+      <section id="simulador" className="mx-auto mt-10 grid max-w-6xl scroll-mt-6 gap-6 px-4 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
         {/* Formulário */}
         <div className="h-fit rounded-2xl border border-line bg-panel p-5 lg:sticky lg:top-6">
           <div className="grid grid-cols-2 rounded-xl border border-line bg-bg p-1 text-sm" role="radiogroup" aria-label="Modo">
@@ -316,7 +358,7 @@ function Calc({ rates, start, syncUrl }: { rates: Rates; start: Start; syncUrl: 
 
         <div className="min-w-0 space-y-6">
           {mode === "meta" ? (
-            <Goal plans={plans} goal={goal} i={i} />
+            <Goal plans={plans} goal={goal} i={i} help={help} onHelp={toggleHelp} />
           ) : (
           <>
           {/* Veredito */}
@@ -350,11 +392,13 @@ function Calc({ rates, start, syncUrl }: { rates: Rates; start: Start; syncUrl: 
                     <p className="flex items-center gap-2 font-semibold">
                       <span className="num text-xs text-dim">{k + 1}º</span>
                       {r.product.name}
+                      <HelpButton id={r.product.id} name={r.product.name} open={help === r.product.id} onToggle={toggleHelp} />
                     </p>
                     <p className="text-xs text-muted">{r.product.detail}</p>
                   </div>
-                  <span className="num rounded-md bg-panel-2 px-1.5 py-0.5 text-[11px] text-muted">{pct(r.product.annual)} a.a.</span>
+                  <span className="num shrink-0 rounded-md bg-panel-2 px-1.5 py-0.5 text-[11px] text-muted">{pct(r.product.annual)} a.a.</span>
                 </div>
+                {help === r.product.id && <HelpText id={r.product.id} />}
                 <p className="num mt-4 text-2xl font-medium">{brl(r.net)}</p>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-panel-2">
                   <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(2, (r.gain / maxGain) * 100)}%`, background: COLOR[r.product.id] }} />
@@ -454,15 +498,21 @@ function Calc({ rates, start, syncUrl }: { rates: Rates; start: Start; syncUrl: 
   );
 }
 
-export function Simulator({ rates }: { rates: Rates }) {
+// `children` entra entre o simulador e o rodapé (a seção "Entenda os investimentos", feita no servidor).
+export function Simulator({ rates, children }: { rates: Rates; children?: ReactNode }) {
   const hydrated = useHydrated();
   return (
     <>
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
         <Logo />
-        <a href="https://github.com/Bleachless/rende-mais" target="_blank" rel="noreferrer" className="text-sm text-muted hover:text-text">
-          código aberto ↗
-        </a>
+        <nav className="flex items-center gap-4 text-sm">
+          <a href="#entenda" className="text-muted hover:text-text">
+            entenda ↓
+          </a>
+          <a href="https://github.com/Bleachless/rende-mais" target="_blank" rel="noreferrer" className="text-muted hover:text-text">
+            código aberto ↗
+          </a>
+        </nav>
       </header>
       <Ticker rates={rates} />
       <main>
@@ -476,6 +526,13 @@ export function Simulator({ rates }: { rates: Rates }) {
             Poupança, CDB, LCI/LCA, Tesouro Selic, Tesouro IPCA+, fundo DI e prefixado lado a lado, com as taxas de hoje e já descontando o que
             ninguém lembra: IR regressivo, come-cotas, custódia da B3 e inflação. Ou diga a sua meta e veja quanto guardar por mês.
           </p>
+          <p className="mt-3 text-sm text-dim">
+            Não sabe o que é LCI, CDI ou come-cotas? Toque no <span className="num text-muted">?</span> de cada investimento ou{" "}
+            <a href="#entenda" className="text-up underline-offset-4 hover:underline">
+              entenda o básico aqui
+            </a>
+            .
+          </p>
           {!rates.live && (
             <p className="mt-4 inline-block rounded-lg border border-amber/40 bg-amber/10 px-3 py-1.5 text-sm text-amber">
               O Banco Central não respondeu agora: usando as últimas taxas conhecidas.
@@ -483,6 +540,7 @@ export function Simulator({ rates }: { rates: Rates }) {
           )}
         </section>
         <Calc key={hydrated ? "url" : "padrao"} rates={rates} start={hydrated ? fromSearch(location.search) : START} syncUrl={hydrated} />
+        {children}
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-12 pt-16 text-sm text-dim sm:px-6">
         <p>

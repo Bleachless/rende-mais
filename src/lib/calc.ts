@@ -23,6 +23,9 @@ export type Inputs = {
   fundoFee: number; // taxa de administração, % a.a.
 };
 
+// Valores com que o simulador abre (e o exemplo da seção "Entenda os investimentos").
+export const DEFAULTS: Inputs = { initial: 10_000, monthly: 500, months: 24, cdbPct: 100, lciPct: 90, prefixado: 14, ipcaReal: 7, fundoPct: 100, fundoFee: 0.5 };
+
 export type ProductId = "poupanca" | "cdb" | "lci" | "selic" | "ipca" | "fundo" | "pre";
 
 export type Product = {

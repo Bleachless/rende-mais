@@ -39,6 +39,7 @@ Ou diga a sua meta e veja quanto guardar por mês em cada um.
 - **Ganho acima da inflação,** com os aportes corrigidos pelo IPCA.
 - **CDB × LCI:** quanto o CDB precisa pagar para empatar com a LCI no seu prazo.
 - **Link da simulação.** Os valores ficam no endereço: é só copiar e mandar.
+- **Entenda os investimentos.** Um **?** em cada investimento explica o que ele é, quem garante e quando dá pra sacar, e uma seção para leigos explica juros compostos, Selic, CDI, IPCA, IR, liquidez, risco e FGC, com um exemplo nas taxas de hoje e o link da fonte oficial de cada regra (lei, Banco Central, FGC, Tesouro Direto, IBGE).
 
 <img src="docs/grafico.png" alt="Gráfico de quanto cada investimento já rendeu, mês a mês" width="100%" />
 
@@ -85,10 +86,12 @@ src/
 ├── app/page.tsx         # lê as taxas (em cache por hora) e monta a página
 ├── components/
 │   ├── simulator.tsx    # formulário, vencedor, ranking e dicas
+│   ├── learn.tsx        # "Entenda os investimentos" (feita no servidor)
 │   └── chart.tsx        # gráfico com Recharts
 └── lib/
     ├── rates.ts         # séries do Banco Central (SGS)
     ├── calc.ts          # simulação mês a mês, IR por aporte, come-cotas, custódia e meta
+    ├── guide.ts         # o que é cada investimento, em poucas linhas
     └── calc.test.ts     # testes
 ```
 

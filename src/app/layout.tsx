@@ -8,7 +8,7 @@ const plex = IBM_Plex_Mono({ variable: "--font-plex", subsets: ["latin"], weight
 export const metadata: Metadata = {
   title: "Rende Mais · CDB, LCI, Tesouro ou poupança: quanto rende de verdade",
   description:
-    "Compare poupança, CDB, LCI/LCA, Tesouro Selic, Tesouro IPCA+, fundo DI e prefixado com as taxas de hoje do Banco Central, já com IR, come-cotas, custódia e inflação. Ou veja quanto guardar por mês para bater a sua meta.",
+    "Compare poupança, CDB, LCI/LCA, Tesouro Selic, Tesouro IPCA+, fundo DI e prefixado com as taxas de hoje do Banco Central, já com IR, come-cotas, custódia e inflação. Ou veja quanto guardar por mês para bater a sua meta e entenda, sem economês, o que é cada um.",
   applicationName: "Rende Mais",
 };
 
